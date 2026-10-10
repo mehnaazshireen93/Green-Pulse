@@ -1,0 +1,61 @@
+date,block,water_kl,night_flow_kl,cost_inr,meter_status
+2026-01-15,Block A,310,42,15500,Normal
+2026-01-15,Block B,280,36,14000,Normal
+2026-01-15,Block C,340,48,17000,Normal
+2026-01-15,Library,90,12,4500,Normal
+2026-01-15,Hostel,650,88,32500,Normal
+2026-01-15,Admin,120,15,6000,Normal
+2026-02-15,Block A,305,40,15250,Normal
+2026-02-15,Block B,275,35,13750,Normal
+2026-02-15,Block C,335,46,16750,Normal
+2026-02-15,Library,88,11,4400,Normal
+2026-02-15,Hostel,640,86,32000,Normal
+2026-02-15,Admin,118,14,5900,Normal
+2026-03-15,Block A,340,45,17000,Normal
+2026-03-15,Block B,310,40,15500,Normal
+2026-03-15,Block C,370,52,18500,Normal
+2026-03-15,Library,95,13,4750,Normal
+2026-03-15,Hostel,720,98,36000,Normal
+2026-03-15,Admin,130,16,6500,Normal
+2026-04-15,Block A,380,50,19000,Normal
+2026-04-15,Block B,340,44,17000,Normal
+2026-04-15,Block C,410,58,20500,Normal
+2026-04-15,Library,105,14,5250,Normal
+2026-04-15,Hostel,790,108,39500,Normal
+2026-04-15,Admin,140,18,7000,Normal
+2026-05-15,Block A,390,52,19500,Normal
+2026-05-15,Block B,350,46,17500,Normal
+2026-05-15,Block C,430,60,21500,Normal
+2026-05-15,Library,108,15,5400,Normal
+2026-05-15,Hostel,810,112,40500,Normal
+2026-05-15,Admin,145,19,7250,Normal
+2026-06-15,Block A,360,48,18000,Normal
+2026-06-15,Block B,320,42,16000,Normal
+2026-06-15,Block C,400,55,20000,Normal
+2026-06-15,Library,100,13,5000,Normal
+2026-06-15,Hostel,750,102,37500,Normal
+2026-06-15,Admin,135,17,6750,Normal
+2026-07-15,Block A,320,43,16000,Normal
+2026-07-15,Block B,290,38,14500,Normal
+2026-07-15,Block C,350,50,17500,Normal
+2026-07-15,Library,92,12,4600,Normal
+2026-07-15,Hostel,670,92,33500,Normal
+2026-07-15,Admin,122,15,6100,Normal
+2026-08-15,Block A,315,41,15750,Normal
+2026-08-15,Block B,285,37,14250,Normal
+2026-08-15,Block C,345,49,17250,Normal
+2026-08-15,Library,90,12,4500,Normal
+2026-08-15,Hostel,660,90,33000,Normal
+2026-08-15,Admin,120,15,6000,Normal
+2026-09-15,Block A,325,44,16250,Normal
+2026-09-15,Block B,295,39,14750,Normal
+2026-09-15,Block C,360,52,18000,Normal
+2026-09-15,Library,93,12,4650,Normal
+2026-09-15,Hostel,680,94,34000,Normal
+2026-09-15,Admin,125,16,6250,Normal
+2026-10-01,Block A,310,42,15500,Normal
+2026-10-01,Block B,280,36,14000,Normal
+2026-10-01,Block C,520,145,26000,Leak_Anomaly
+2026-10-01,Library,89,12,4450,Normal
+2026-10-01,Hostel,650,88,32500,Normal
+2026-10-01,Admin,120,15,6000,Normal

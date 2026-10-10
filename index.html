@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GreenPulse | Campus Climate Impact & Sustainability Dashboard</title>
+
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- External CDN Libraries with Graceful Fallback Handling -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="app">
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand" onclick="showPage('landing')">
+        <div class="brand-logo">🌱</div>
+        <div>
+          <div class="brand-text">GreenPulse</div>
+          <span class="brand-tag">SUSTAINABILITY OS</span>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Core Views</div>
+        <nav class="nav">
+          <button class="nav-btn active" data-page="dashboard">
+            <span class="icon">📊</span> <span>Dashboard</span>
+          </button>
+          <button class="nav-btn" data-page="energy">
+            <span class="icon">⚡</span> <span>Electricity Analysis</span>
+          </button>
+          <button class="nav-btn" data-page="water">
+            <span class="icon">💧</span> <span>Water Analysis</span>
+          </button>
+          <button class="nav-btn" data-page="emissions">
+            <span class="icon">☁️</span> <span>Carbon Emissions</span>
+          </button>
+          <button class="nav-btn" data-page="sensors">
+            <span class="icon">📡</span> <span>Surveys & Sensors</span>
+          </button>
+          <button class="nav-btn" data-page="transport">
+            <span class="icon">🚲</span> <span>Transport Records</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Strategy & Tools</div>
+        <nav class="nav">
+          <button class="nav-btn" data-page="score">
+            <span class="icon">🎯</span> <span>Score Breakdown</span>
+          </button>
+          <button class="nav-btn" data-page="simulator">
+            <span class="icon">🎛️</span> <span>What-If Simulator</span>
+          </button>
+          <button class="nav-btn" data-page="leaderboard">
+            <span class="icon">🏆</span> <span>Leaderboard & Net Zero</span>
+          </button>
+          <button class="nav-btn" data-page="recommendations">
+            <span class="icon">💡</span> <span>Findings & Actions</span>
+          </button>
+          <button class="nav-btn" data-page="reports">
+            <span class="icon">📄</span> <span>Reports & SDGs</span>
+          </button>
+          <button class="nav-btn" data-page="data">
+            <span class="icon">📥</span> <span>Data Input & Scan</span>
+          </button>
+          <button class="nav-btn" data-page="settings">
+            <span class="icon">⚙️</span> <span>Settings / Factors</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="sidebar-bottom">
+        <button class="btn btn-outline" id="themeToggleBtn" style="width:100%;">
+          <span id="themeIcon">🌙</span> <span id="themeText">Dark Mode</span>
+        </button>
+        <div style="font-size:11px; color:var(--muted); text-align:center; margin-top:12px;">
+          PSCMR Smart Hackathon 2026
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN VIEWPORT -->
+    <main class="main">
+      <!-- DATA STATUS BANNER -->
+      <div class="data-status-banner" id="dataModeBanner">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span id="dataModeIcon">⚡</span>
+          <span id="dataModeText">Demo Mode: Displaying 12-month simulated baseline data for 6 campus blocks.</span>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-sm btn-outline" id="toggleDataModeBtn" onclick="toggleActiveDataset()">Switch
+            View</button>
+          <button class="btn btn-sm btn-outline" onclick="resetActiveData()">Reset Data</button>
+        </div>
+      </div>
+
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="crumb-wrap">
+          <button class="btn btn-outline btn-sm mobile-toggle-btn" id="mobileMenuBtn">☰</button>
+          <div>
+            <div class="crumb-trail">Workspace / Campus Sustainability</div>
+            <div class="crumb-current" id="pageCrumb">Dashboard Overview</div>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <!-- Role Switcher -->
+          <div class="role-badge">
+            <span>Role:</span>
+            <select id="userRoleSelect" class="form-control"
+              style="padding:4px 8px; border:none; background:transparent; font-weight:700;">
+              <option value="Admin">Administrator</option>
+              <option value="HOD">Department Head</option>
+              <option value="Student">Student / Green Club</option>
+            </select>
+          </div>
+
+          <!-- Pitch Deck Shortcut -->
+          <a href="pitch-presentation.html" target="_blank" class="btn btn-outline btn-sm">
+            📑 Pitch Deck
+          </a>
+
+          <!-- PDF Quick Export -->
+          <button class="btn btn-primary btn-sm" onclick="exportMonthlyPDFReport()">
+            ⬇ Export PDF
+          </button>
+        </div>
+      </header>
+
+      <!-- CONTENT VIEWS WRAPPER -->
+      <div class="content-container">
+
+        <!-- ==================== 1. LANDING PAGE ==================== -->
+        <section id="page-landing" class="page-view hidden">
+          <div class="hero-box">
+            <div class="hero-pill">Climate Action Made Measurable</div>
+            <h1 class="hero-title">Measure. Improve.<br>Sustain.</h1>
+            <p class="hero-desc">
+              Transform utility bills, water tankers, and commute logs into verified sustainability intelligence.
+              GreenPulse equips university leaders with an accountable Sustainability Score (0–100), AI anomaly alerts,
+              and prioritized ROI pathways to Net Zero.
+            </p>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="showPage('dashboard')">🚀 Open Dashboard</button>
+              <button class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.4);"
+                onclick="showPage('data')">📂 Upload Records</button>
+              <a href="pitch-presentation.html" target="_blank" class="btn btn-outline"
+                style="color:white; border-color:rgba(255,255,255,0.4);">📊 View Hackathon Pitch</a>
+            </div>
+          </div>
+
+          <div class="grid grid-3">
+            <div class="card">
+              <div style="font-size:32px; margin-bottom:12px;">📊</div>
+              <h3 style="margin-bottom:8px;">Understand Campus Footprint</h3>
+              <p style="color:var(--muted); font-size:13px; line-height:1.6;">
+                Monitor energy, water, waste, and transport across 6 campus blocks with normalized per-capita metrics
+                and verifiable CEA India emission factors.
+              </p>
+            </div>
+            <div class="card">
+              <div style="font-size:32px; margin-bottom:12px;">🔍</div>
+              <h3 style="margin-bottom:8px;">Catch Costly Anomalies</h3>
+              <p style="color:var(--muted); font-size:13px; line-height:1.6;">
+                Automated Z-score statistical engines identify night-time plumbing leaks and after-hours HVAC over-runs
+                before bills arrive.
+              </p>
+            </div>
+            <div class="card">
+              <div style="font-size:32px; margin-bottom:12px;">💰</div>
+              <h3 style="margin-bottom:8px;">Actionable Financial & Carbon ROI</h3>
+              <p style="color:var(--muted); font-size:13px; line-height:1.6;">
+                Get top recommendations ranked by monthly ₹ savings, carbon reduction in tCO₂e, and capital payback
+                periods with what-if simulations.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 2. MAIN DASHBOARD ==================== -->
+        <section id="page-dashboard" class="page-view">
+          <div class="page-head">
+            <div>
+              <h1>Executive Sustainability Snapshot 🌱</h1>
+              <p>Real-time climate impact metrics, anomaly detections, and prioritized interventions.</p>
+            </div>
+            <div class="head-actions">
+              <button class="btn btn-secondary btn-sm" onclick="openScoreModal()">ℹ️ How is this score
+                calculated?</button>
+              <button class="btn btn-primary btn-sm" onclick="showPage('data')">＋ Add Utility Record</button>
+            </div>
+          </div>
+
+          <!-- SUSTAINABILITY SCORE HERO -->
+          <div class="card score-card" style="margin-bottom: 24px;">
+            <div class="score-gauge-wrap">
+              <svg class="score-svg" viewBox="0 0 100 100">
+                <circle class="score-meter-bg" cx="50" cy="50" r="42"></circle>
+                <circle class="score-meter-fill" id="scoreGaugeCircle" cx="50" cy="50" r="42" stroke-dasharray="263.89"
+                  stroke-dashoffset="47.5"></circle>
+              </svg>
+              <div class="score-gauge-center">
+                <div class="score-number" id="dashScoreNum">82</div>
+                <div class="score-caption">out of 100</div>
+              </div>
+            </div>
+
+            <div style="flex:1;">
+              <div class="sub-label">CAMPUS SUSTAINABILITY SCORE</div>
+              <h2 style="font-size:22px; margin: 4px 0 8px;">Strong Environmental Performance</h2>
+              <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                <span class="grade-badge" id="dashScoreGrade">Grade A • Superior</span>
+                <span class="trend-badge trend-good" id="dashScoreChange">↗ +4.2 pts vs last month</span>
+              </div>
+              <p style="color:var(--muted); font-size:13px; max-width:680px; line-height:1.6;">
+                Weighted multi-pillar evaluation across energy, water conservation, waste diversion, green commuting,
+                and carbon intensity normalized per student.
+              </p>
+              <div style="margin-top:14px; display:flex; gap:10px;">
+                <button class="btn btn-outline btn-sm" onclick="showPage('score')">Explore Pillar Weights →</button>
+                <button class="btn btn-outline btn-sm" onclick="showPage('simulator')">Test What-If Scenarios →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5 KPI CARDS -->
+          <div class="grid grid-5" style="margin-bottom: 24px;">
+            <!-- Energy -->
+            <div class="card kpi-card">
+              <div class="kpi-top">
+                <span class="sub-label">⚡ ENERGY</span>
+                <span class="confidence-tag conf-high" title="Data completeness: 100% verified">Verified 100%</span>
+              </div>
+              <div>
+                <div class="kpi-value" id="kpiEnergyVal">48,260</div>
+                <div class="kpi-unit">kWh / month</div>
+                <div class="trend-badge trend-warn" id="kpiEnergyTrend">↗ 3.8% MoM</div>
+              </div>
+              <div class="sparkline-box"><canvas id="sparkEnergy"></canvas></div>
+            </div>
+
+            <!-- Water -->
+            <div class="card kpi-card">
+              <div class="kpi-top">
+                <span class="sub-label">💧 WATER</span>
+                <span class="confidence-tag conf-high" title="Data completeness: Verified meters">Verified 98%</span>
+              </div>
+              <div>
+                <div class="kpi-value" id="kpiWaterVal">1,840</div>
+                <div class="kpi-unit">kL / month</div>
+                <div class="trend-badge trend-good" id="kpiWaterTrend">↘ 6.2% MoM</div>
+              </div>
+              <div class="sparkline-box"><canvas id="sparkWater"></canvas></div>
+            </div>
+
+            <!-- Waste -->
+            <div class="card kpi-card">
+              <div class="kpi-top">
+                <span class="sub-label">♻️ WASTE</span>
+                <span class="confidence-tag conf-med" title="Data completeness: Estimated weighing logs">Audit
+                  85%</span>
+              </div>
+              <div>
+                <div class="kpi-value" id="kpiWasteVal">2,460</div>
+                <div class="kpi-unit">kg / month</div>
+                <div class="trend-badge trend-good" id="kpiWasteTrend">↘ 8.1% MoM</div>
+              </div>
+              <div class="sparkline-box"><canvas id="sparkWaste"></canvas></div>
+            </div>
+
+            <!-- Transport -->
+            <div class="card kpi-card">
+              <div class="kpi-top">
+                <span class="sub-label">🚲 COMMUTE</span>
+                <span class="confidence-tag conf-med" title="Sample size: 1,420 surveyed trips">Survey 82%</span>
+              </div>
+              <div>
+                <div class="kpi-value" id="kpiTransportVal">64%</div>
+                <div class="kpi-unit">green modal share</div>
+                <div class="trend-badge trend-good" id="kpiTransportTrend">↗ 5.4% MoM</div>
+              </div>
+              <div class="sparkline-box"><canvas id="sparkTransport"></canvas></div>
+            </div>
+
+            <!-- Carbon -->
+            <div class="card kpi-card">
+              <div class="kpi-top">
+                <span class="sub-label">☁️ CARBON</span>
+                <span class="confidence-tag conf-high" title="CEA India Baseline v19.0 factor">CEA v19</span>
+              </div>
+              <div>
+                <div class="kpi-value" id="kpiCarbonVal">39.6</div>
+                <div class="kpi-unit">tCO₂e total</div>
+                <div class="trend-badge trend-good" id="kpiCarbonTrend">↘ 2.7% MoM</div>
+              </div>
+              <div class="sparkline-box"><canvas id="sparkCarbon"></canvas></div>
+            </div>
+          </div>
+
+          <!-- CHARTS ROW 1: 12-Month Line + Emissions Donut -->
+          <div class="grid grid-2" style="margin-bottom: 24px;">
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <h3 class="card-title">📈 12-Month Carbon Emissions & 3-Month Forecast</h3>
+                  <span style="font-size:12px; color:var(--muted);">Actual historical data + dashed linear
+                    forecast</span>
+                </div>
+                <span class="pill pill-primary">Dashed = 90-Day Forecast</span>
+              </div>
+              <div class="chart-container">
+                <canvas id="dashCarbonChart"></canvas>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <h3 class="card-title">🍩 Emissions Split by Source (Scope 1, 2, 3)</h3>
+                  <span style="font-size:12px; color:var(--muted);">Grid electricity, genset diesel, transport &
+                    waste</span>
+                </div>
+                <span class="pill">Current Month</span>
+              </div>
+              <div class="chart-container">
+                <canvas id="dashSourceChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- CHARTS ROW 2: Block Comparison + Actions & Alerts -->
+          <div class="grid grid-2" style="margin-bottom: 24px;">
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <h3 class="card-title">🏢 Block & Department Comparison</h3>
+                  <span style="font-size:12px; color:var(--muted);">Carbon footprint across 6 campus facilities</span>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="showPage('leaderboard')">Leaderboard →</button>
+              </div>
+              <div class="chart-container">
+                <canvas id="dashBlockChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Top 5 Actions -->
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <h3 class="card-title">💡 Top 5 Prioritized Interventions</h3>
+                  <span style="font-size:12px; color:var(--muted);">Calculated ROI using CEA factors & verified
+                    tariffs</span>
+                </div>
+                <span class="pill pill-primary">High ROI</span>
+              </div>
+              <div id="dashTopActionsContainer">
+                <!-- Rendered dynamically by script.js -->
+              </div>
+            </div>
+          </div>
+
+          <!-- ANOMALY ALERTS PANEL -->
+          <div class="card" style="border-left: 4px solid #ea580c;">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">⚠️ Automated Anomaly Alerts (Z-Score &gt; 2.2)</h3>
+                <span style="font-size:12px; color:var(--muted);">Statistical outliers requiring physical facility
+                  inspection</span>
+              </div>
+              <span class="pill pill-warn" id="dashAlertCountBadge">2 Active Alerts</span>
+            </div>
+            <div id="dashAlertsList">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 3. ELECTRICITY ANALYSIS ==================== -->
+        <section id="page-energy" class="page-view hidden">
+          <div class="page-head">
+            <div>
+              <h1>Electricity Consumption & Tariff Analysis ⚡</h1>
+              <p>Track kWh demand, tariff charges, peak load, and solar displacement.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="showPage('data')">Upload Energy Bill</button>
+          </div>
+
+          <div class="grid grid-3" style="margin-bottom:24px;">
+            <div class="card">
+              <div class="sub-label">MONTHLY CONSUMPTION</div>
+              <div class="kpi-value" id="energyPageKwh">48,260 kWh</div>
+              <div class="trend-badge trend-warn">Average: 1,608 kWh / day</div>
+            </div>
+            <div class="card">
+              <div class="sub-label">ESTIMATED UTILITY EXPENDITURE</div>
+              <div class="kpi-value" id="energyPageCost">₹3,86,080</div>
+              <div style="font-size:12px; color:var(--muted);">Average blended tariff: ₹8.00 / kWh</div>
+            </div>
+            <div class="card">
+              <div class="sub-label">PEAK DEMAND & POWER FACTOR</div>
+              <div class="kpi-value">44.5 kW</div>
+              <div class="trend-badge trend-good">Average Power Factor: 0.95</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:24px;">
+            <div class="card-head">
+              <h3 class="card-title">Electricity Trend by Campus Block</h3>
+              <div style="display:flex; gap:10px;">
+                <select class="form-control" id="energyBlockFilter" onchange="filterEnergyTable()">
+                  <option value="All">All Blocks</option>
+                  <option value="Block A">Block A</option>
+                  <option value="Block B">Block B</option>
+                  <option value="Block C">Block C</option>
+                  <option value="Library">Library</option>
+                  <option value="Hostel">Hostel</option>
+                  <option value="Admin">Admin</option>
+                </select>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="energyTrendChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3 class="card-title">Electricity Records Table</h3>
+              <button class="btn btn-outline btn-sm" onclick="exportTableToCSV('energy')">Export CSV</button>
+            </div>
+            <div class="table-responsive">
+              <table id="energyDataTable">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Block</th>
+                    <th>Consumption (kWh)</th>
+                    <th>Peak kW</th>
+                    <th>Cost (₹)</th>
+                    <th>Power Factor</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="energyTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 4. WATER ANALYSIS ==================== -->
+        <section id="page-water" class="page-view hidden">
+          <div class="page-head">
+            <div>
+              <h1>Water Conservation & Leak Detection 💧</h1>
+              <p>Monitor kilolitres (kL) consumed, tanker supply costs, and night-flow leakage.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="showPage('data')">Add Water Record</button>
+          </div>
+
+          <div class="grid grid-3" style="margin-bottom:24px;">
+            <div class="card">
+              <div class="sub-label">TOTAL WATER CONSUMPTION</div>
+              <div class="kpi-value" id="waterPageKl">1,840 kL</div>
+              <div class="trend-badge trend-good">~61.3 kL / day across campus</div>
+            </div>
+            <div class="card">
+              <div class="sub-label">WATER PROCUREMENT COST</div>
+              <div class="kpi-value" id="waterPageCost">₹92,000</div>
+              <div style="font-size:12px; color:var(--muted);">Unit cost: ₹50 / kL (Tankers + Municipal)</div>
+            </div>
+            <div class="card">
+              <div class="sub-label">NIGHT FLOW RATIO</div>
+              <div class="kpi-value" style="color:#dc2626;">24.2%</div>
+              <div class="trend-badge trend-bad">Baseline benchmark: &lt; 10%</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:24px;">
+            <div class="card-head">
+              <h3 class="card-title">Water Consumption vs Night-Time Base Flow</h3>
+              <span class="pill pill-warn">Block C Spike Detected</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="waterTrendChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3 class="card-title">Water Utility Records</h3>
+              <button class="btn btn-outline btn-sm" onclick="exportTableToCSV('water')">Export CSV</button>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Block</th>
+                    <th>Total Usage (kL)</th>
+                    <th>Night Flow (kL)</th>
+                    <th>Bill Cost (₹)</th>
+                    <th>Diagnostic</th>
+                  </tr>
+                </thead>
+                <tbody id="waterTableBody">
+                  <!-- Dynamically rendered -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 5. CARBON EMISSIONS ==================== -->
+        <section id="page-emissions" class="page-view hidden">
+          <div class="page-head">
+            <div>
+              <h1>Greenhouse Gas Emissions Accounting ☁️</h1>
+              <p>Scope 1, Scope 2, and Scope 3 activity conversion using India CEA Baseline v19.0.</p>
+            </div>
+            <span class="pill pill-primary">GHG Protocol Compliant</span>
+          </div>
+
+          <div class="grid grid-3" style="margin-bottom:24px;">
+            <div class="card" style="border-top:4px solid #f59e0b;">
+              <div class="sub-label">SCOPE 1 (DIRECT)</div>
+              <div class="kpi-value">6.88 tCO₂e</div>
+              <p style="font-size:12px; color:var(--muted);">Diesel generator backup & campus shuttles</p>
+            </div>
+            <div class="card" style="border-top:4px solid var(--green);">
+              <div class="sub-label">SCOPE 2 (INDIRECT)</div>
+              <div class="kpi-value">39.57 tCO₂e</div>
+              <p style="font-size:12px; color:var(--muted);">Grid electricity (0.82 kg CO₂e / kWh)</p>
+            </div>
+            <div class="card" style="border-top:4px solid #0284c7;">
+              <div class="sub-label">SCOPE 3 (VALUE CHAIN)</div>
+              <div class="kpi-value">4.39 tCO₂e</div>
+              <p style="font-size:12px; color:var(--muted);">Waste, municipal water pumping, student transit</p>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:24px;">
+            <div class="card-head">
+              <h3 class="card-title">Emission Factors and Regulatory Sources</h3>
+              <span class="pill">India Standards</span>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Emission Source</th>
+                    <th>Activity Unit</th>
+                    <th>Emission Factor</th>
+                    <th>Standard Reference</th>
+                    <th>Scope</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Central Grid Electricity</td>
+                    <td>1 kWh</td>
+                    <td><strong>0.820 kg CO₂e</strong></td>
+                    <td>Central Electricity Authority (CEA) Baseline v19.0</td>
+                    <td><span class="pill pill-primary">Scope 2</span></td>
+                  </tr>
+                  <tr>
+                    <td>High Speed Diesel (Genset / Fleet)</td>
+                    <td>1 Litre</td>
+                    <td><strong>2.680 kg CO₂e</strong></td>
+                    <td>IPCC 2006 Guidelines for National GHG Inventories</td>
+                    <td><span class="pill">Scope 1</span></td>
+                  </tr>
+                  <tr>
+                    <td>Commercial LPG</td>
+                    <td>1 kg</td>
+                    <td><strong>2.980 kg CO₂e</strong></td>
+                    <td>IPCC Stationary Combustion Guidelines</td>
+                    <td><span class="pill">Scope 1</span></td>
+                  </tr>
+                  <tr>
+                    <td>Municipal Water Treatment & Pumping</td>
+                    <td>1 kL</td>
+                    <td><strong>0.340 kg CO₂e</strong></td>
+                    <td>National Water Pumping Energy Assessment</td>
+                    <td><span class="pill">Scope 3</span></td>
+                  </tr>
+                  <tr>
+                    <td>Landfilled Municipal Waste</td>
+                    <td>1 kg</td>
+                    <td><strong>1.250 kg CO₂e</strong></td>
+                    <td>CPCB Solid Waste Methane Generation Standard</td>
+                    <td><span class="pill">Scope 3</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 6. SURVEYS & SENSORS ==================== -->
+        <section id="page-sensors" class="page-view hidden">
+          <div class="page-head">
+            <div>
+              <h1>IoT Sensor Telemetry & Campus Surveys 📡</h1>
+              <p>Smart sub-meters, ambient temperature, occupancy, and awareness survey logs.</p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="showPage('data')">Import Sensor CSV</button>
+          </div>
+
+          <div class="card" style="margin-bottom:24px;">
+            <div class="card-head">
+              <h3 class="card-title">Live Sensor Feeds & Telemetry Stream</h3>
+              <span class="pill pill-primary">Simulated IoT Gateway</span>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Sensor Location</th>
+                    <th>Measurement Type</th>
+                    <th>Current Reading</th>
+                    <th>Telemetry Unit</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="sensorsTableBody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="grid grid-2">
+            <div class="card">
+              <h3 class="card-title" style="margin-bottom:12px;">📊 Campus Sustainability Survey Results</h3>
+              <p style="font-size:13px; color:var(--muted); margin-bottom:14px;">
+                Survey of 1,250 students and faculty regarding environmental habits:
+              </p>
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700;">
+                    <span>Support for Campus Single-Use Plastic Ban</span>
+                    <span>92%</span>
+                  </div>
+                  <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" style="width:92%;"></div>
+                  </div>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700;">
+                    <span>Willingness to use Electric Campus Shuttles</span>
+                    <span>84%</span>
+                  </div>
+                  <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" style="width:84%;"></div>
+                  </div>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700;">
+                    <span>Awareness of Rooftop Solar Program</span>
+                    <span>68%</span>
+                  </div>
+                  <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" style="width:68%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 class="card-title" style="margin-bottom:12px;">🌡️ HVAC Temperature Correlation</h3>
+              <p style="font-size:13px; color:var(--muted); margin-bottom:14px;">
+                Analysis indicates every 1°C increase in AC setpoint (e.g. 23°C → 24°C) saves ~6% total compressor power
+                without impacting classroom comfort.
+              </p>
+              <div class="alert-box alert-info">
+                <span class="alert-icon">💡</span>
+                <div>
+                  <strong>Recommended Policy:</strong> Set standard campus thermostat locks at 24°C or 25°C to save
+                  ~₹1,46,000 annually.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 7. TRANSPORT RECORDS ==================== -->
+        <section id="page-transport" class="page-view hidden">
+          <div class="page-head">
+            <div>
+              <h1>Campus Commute & Fleet Records 🚲</h1>
+              <p>Modal split, low-carbon commute percentage, and shuttle emissions.</p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="showPage('data')">Log Commute Survey</button>
+          </div>
+
+          <div class="grid grid-3" style="margin-bottom:24px;">
+            <div class="card">
+              <div class="sub-label">GREEN COMMUTE SHARE</div>
+              <div class="kpi-value" style="color:var(--green);">64.0%</div>
+              <div class="trend-badge trend-good">↗ Target: 75% by 2028</div>
+            </div>
+            <div class="card">
+              <div class="sub-label">TOTAL TRAVELLED / DAY</div>
+              <div class="kpi-value">17,440 km</div>
+              <p style="font-size:12px; color:var(--muted);">Across 2,340 daily commuter trips</p>
+            </div>
+            <div class="card">
+              <div class="sub-label">TRANSPORT EMISSIONS</div>
+              <div class="kpi-value">2.28 tCO₂e</div>
+              <p style="font-size:12px; color:var(--muted);">Displaced via EV shuttles: 1.4 tCO₂e</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3 class="card-title">Modal Share Breakdown</h3>
+              <span class="pill pill-primary">Modal Shift Progress</span>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Commute Mode</th>
+                    <th>Daily Trips</th>
+                    <th>Total Distance</th>
+                    <th>Passengers</th>
+                    <th>Classified as Green</th>
+                    <th>Emissions (kg CO₂e)</th>
+                  </tr>
+                </thead>
+                <tbody id="transportTableBody">
+                  <!-- Dynamically rendered -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 8. SCORE BREAKDOWN ==================== -->
+        <section id="page-score" class="page-view hidden">
+          <div class="page-head">
+            <div>
+              <h1>Transparent Sustainability Score Breakdown 🎯</h1>
+              <p>Adjust pillar weights using sliders to reflect your institution's strategic priorities.</p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="resetPillarWeights()">Reset Default Weights</button>
+          </div>
+
+          <div class="grid grid-2">
+            <div class="card">
+              <div class="card-head">
+                <h3 class="card-title">Pillar Weight Controls (Must Total 100%)</h3>
+                <span class="pill pill-primary" id="scoreWeightTotalBadge">Total: 100%</span>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:16px;" id="pillarSliderList">
+                <!-- Dynamically populated sliders -->
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="sub-label">RECALCULATED SCORE</div>
+              <div style="display:flex; align-items:baseline; gap:12px; margin: 12px 0;">
+                <span class="kpi-value" id="breakdownScoreVal" style="font-size:42px;">82</span>
+                <span class="grade-badge" id="breakdownGradeVal">Grade A</span>
+              </div>
+              <div class="progress-bar-wrap" style="height:12px; margin-bottom:18px;">
+                <div class="progress-bar-fill" id="breakdownScoreBar" style="width:82%;"></div>
+              </div>
+
+              <h4 style="font-size:14px; margin-bottom:8px;">Transparent Methodology Formula</h4>
+              <div
+                style="background:var(--soft); padding:14px; border-radius:8px; font-family:monospace; font-size:12px; line-height:1.6; margin-bottom:14px;">
+                Score = Σ (Pillar_Score_i × Weight_i) ÷ Σ (Weight_i)<br>
+                • Energy (Benchmark: 120 kWh/student/year)<br>
+                • Water (Benchmark: 45 L/person/day)<br>
+                • Waste (Benchmark: 60% diversion rate)<br>
+                • Transport (Benchmark: 50% non-fossil transit)<br>
+                • Carbon (Benchmark: 0.15 tCO₂e/FTE/year)
+              </div>
+              <p style="font-size:12px; color:var(--muted); line-height:1.6;">
+                Weights normalize automatically so institution leaders can customize metrics without breaking
+                mathematical consistency.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 9. WHAT-IF SIMULATOR ==================== -->
+        <section id="page-simulator" class="page-view hidden">
+          <div class="page-head">
+            <div>
+              <h1>Campus What-If Scenario Simulator 🎛️</h1>
+              <p>Simulate campus climate interventions and view projected savings in ₹, CO₂, and score.</p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="resetSimulatorSliders()">Reset Assumptions</button>
+          </div>
+
+          <div class="grid grid-2">
+            <div class="card">
+              <h3 class="card-title" style="margin-bottom:18px;">Proposed Strategic Initiatives</h3>
+
+              <div class="form-group">
+                <label>Rooftop Solar Capacity <span class="slider-val-tag" id="simValSolar">100 kW</span></label>
+                <input type="range" id="simSlideSolar" min="0" max="500" step="10" value="100"
+                  oninput="updateSimulatorLive()">
+                <span style="font-size:11px; color:var(--muted);">Generates ~12,000 kWh/mo clean energy offsetting grid
+                  power.</span>
+              </div>
+
+              <div class="form-group">
+                <label>Electric Shuttle Buses <span class="slider-val-tag" id="simValEv">30%</span></label>
+                <input type="range" id="simSlideEv" min="0" max="100" step="5" value="30"
+                  oninput="updateSimulatorLive()">
+                <span style="font-size:11px; color:var(--muted);">Displaces high-emission diesel shuttle
+                  consumption.</span>
+              </div>
+
+              <div class="form-group">
+                <label>Campus Organic Waste Composting <span class="slider-val-tag"
+                    id="simValCompost">50%</span></label>
+                <input type="range" id="simSlideCompost" min="0" max="100" step="5" value="50"
+                  oninput="updateSimulatorLive()">
+                <span style="font-size:11px; color:var(--muted);">Diverts food & garden waste, stopping methane
+                  creation.</span>
+              </div>
+
+              <div class="form-group">
+                <label>AC Thermostat Setpoint <span class="slider-val-tag" id="simValAc">24°C</span></label>
+                <input type="range" id="simSlideAc" min="18" max="28" step="1" value="24"
+                  oninput="updateSimulatorLive()">
+                <span style="font-size:11px; color:var(--muted);">Every 1°C increase over 22°C reduces cooling load by
+                  ~6%.</span>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="sub-label">PROJECTED MONTHLY INSTITUTIONAL IMPACT</div>
+
+              <div class="grid grid-2" style="margin: 20px 0;">
+                <div class="card" style="background:var(--soft);">
+                  <div class="sub-label">CO₂e AVOIDED</div>
+                  <div class="kpi-value" id="simResCo2" style="color:var(--green);">11.4 t</div>
+                  <span style="font-size:11px; color:var(--muted);">per month</span>
+                </div>
+                <div class="card" style="background:var(--soft);">
+                  <div class="sub-label">PROJECTED SAVINGS</div>
+                  <div class="kpi-value" id="simResMoney" style="color:var(--green);">₹94,200</div>
+                  <span style="font-size:11px; color:var(--muted);">per month in utility bills</span>
+                </div>
+                <div class="card" style="background:var(--soft);">
+                  <div class="sub-label">PROJECTED SCORE</div>
+                  <div class="kpi-value" id="simResScore">88 / 100</div>
+                  <span class="grade-badge" id="simResGrade">Grade A</span>
+                </div>
+                <div class="card" style="background:var(--soft);">
+                  <div class="sub-label">NET EMISSIONS CUT</div>
+                  <div class="kpi-value" id="simResPercent">28.8%</div>
+                  <span style="font-size:11px; color:var(--muted);">reduction vs baseline</span>
+                </div>
+              </div>
+
+              <div class="progress-bar-wrap" style="height:10px;">
+                <div class="progress-bar-fill" id="simScoreProgress" style="width:88%;"></div>
+              </div>
+              <p style="font-size:12px; color:var(--muted); margin-top:14px; line-height:1.6;">
+                *Modelled using CEA India grid emission factor (0.82 kg CO₂e/kWh) and commercial electricity rates of
+                ₹8.00/kWh.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 10. LEADERBOARD & NET ZERO ==================== -->
+        <section id="page-leaderboard" class="page-view hidden">
+          <div class="page-head">
+            <div>
+              <h1>Campus Leaderboard & Net Zero 2035 Goal 🏆</h1>
+              <p>Celebrate sustainable departments and foster inter-block green competitions.</p>
+            </div>
+            <span class="pill pill-primary">Net Zero Commitment: 2035</span>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3 class="card-title">Campus Department Rankings</h3>
+              <span class="pill">Current Semester</span>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Campus Block / Department</th>
+                    <th>Sustainability Score</th>
+                    <th>Performance Badge</th>
+                    <th>Net Zero 2035 Progress</th>
+                  </tr>
+                </thead>
+                <tbody id="leaderboardTableBody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 11. FINDINGS & ACTIONS ==================== -->
+        <section id="page-recommendations" class="page-view hidden">
+          <div class="page-head">
+            <div>
+              <h1>Automated Findings, Recommendations & Conclusion 💡</h1>
+              <p>Dynamically generated from current verified data. No hallucinated figures.</p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="exportMonthlyPDFReport()">Download as PDF</button>
+          </div>
+
+          <!-- DYNAMIC FINDINGS CARD -->
+          <div class="findings-card">
+            <div class="findings-title">
+              <span>🔍</span> <span>Verified Environmental Findings</span>
+            </div>
+            <ul class="findings-list" id="findingsListDynamic">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
+
+          <!-- TOP RECOMMENDATIONS -->
+          <div class="card" style="margin-bottom:24px;">
+            <div class="card-head">
+              <h3 class="card-title">Top Actionable Recommendations (Ranked by Financial & Carbon ROI)</h3>
+              <span class="pill pill-primary">Mathematical Prioritization</span>
+            </div>
+            <div id="recommendationsListDynamic">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- DYNAMIC FINAL CONCLUSION -->
+          <div class="card" style="border-left: 4px solid var(--green);">
+            <div class="card-head">
+              <h3 class="card-title">📋 Institutional Executive Conclusion</h3>
+              <span class="pill">Synthesized Summary</span>
+            </div>
+            <div id="conclusionDynamicText" style="font-size:14px; line-height:1.7; color:var(--text);">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 12. REPORTS & SDGS ==================== -->
+        <section id="page-reports" class="page-view hidden">
+          <div class="page-head">
+            <div>
+              <h1>Executive Reports & UN SDG Alignment 📄</h1>
+              <p>Download audit-ready sustainability PDFs for NAAC, NIRF, and stakeholders.</p>
+            </div>
+            <button class="btn btn-primary" onclick="exportMonthlyPDFReport()">
+              ⬇ Download Monthly PDF Report
+            </button>
+          </div>
+
+          <div class="grid grid-3" style="margin-bottom:24px;">
+            <div class="card">
+              <div class="sub-label">MONTHLY EMISSIONS</div>
+              <div class="kpi-value" id="reportCarbonVal">39.6 tCO₂e</div>
+              <div class="trend-badge trend-good">Verified using CEA India Factor</div>
+            </div>
+            <div class="card">
+              <div class="sub-label">TOTAL UTILITY CHARGES</div>
+              <div class="kpi-value" id="reportCostVal">₹4,78,080</div>
+              <div style="font-size:12px; color:var(--muted);">Electricity + Water + Fuel</div>
+            </div>
+            <div class="card">
+              <div class="sub-label">CAMPUS NET ZERO TARGET</div>
+              <div class="kpi-value" style="color:var(--green);">2035</div>
+              <span class="pill pill-primary">On Track</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3 class="card-title">United Nations Sustainable Development Goals (SDG) Matrix</h3>
+              <span class="pill">Institutional Indicators</span>
+            </div>
+
+            <div class="grid grid-2" style="gap:24px;">
+              <div>
+                <div
+                  style="font-weight:800; font-size:14px; margin-bottom:4px; display:flex; justify-content:space-between;">
+                  <span>⚡ SDG 7: Affordable & Clean Energy</span>
+                  <span style="color:var(--green)">68%</span>
+                </div>
+                <p style="font-size:12px; color:var(--muted); margin-bottom:6px;">Clean electricity displacement &
+                  energy efficiency</p>
+                <div class="progress-bar-wrap">
+                  <div class="progress-bar-fill" style="width:68%;"></div>
+                </div>
+              </div>
+
+              <div>
+                <div
+                  style="font-weight:800; font-size:14px; margin-bottom:4px; display:flex; justify-content:space-between;">
+                  <span>🏘️ SDG 11: Sustainable Cities & Communities</span>
+                  <span style="color:var(--green)">64%</span>
+                </div>
+                <p style="font-size:12px; color:var(--muted); margin-bottom:6px;">Non-motorized and electric campus
+                  commuting share</p>
+                <div class="progress-bar-wrap">
+                  <div class="progress-bar-fill" style="width:64%;"></div>
+                </div>
+              </div>
+
+              <div>
+                <div
+                  style="font-weight:800; font-size:14px; margin-bottom:4px; display:flex; justify-content:space-between;">
+                  <span>♻️ SDG 12: Responsible Consumption</span>
+                  <span style="color:var(--green)">72%</span>
+                </div>
+                <p style="font-size:12px; color:var(--muted); margin-bottom:6px;">Wet & dry waste diverted from open
+                  municipal landfills</p>
+                <div class="progress-bar-wrap">
+                  <div class="progress-bar-fill" style="width:72%;"></div>
+                </div>
+              </div>
+
+              <div>
+                <div
+                  style="font-weight:800; font-size:14px; margin-bottom:4px; display:flex; justify-content:space-between;">
+                  <span>🌍 SDG 13: Climate Action</span>
+                  <span style="color:var(--green)">48%</span>
+                </div>
+                <p style="font-size:12px; color:var(--muted); margin-bottom:6px;">Net greenhouse gas reduction relative
+                  to 2022 baseline</p>
+                <div class="progress-bar-wrap">
+                  <div class="progress-bar-fill" style="width:48%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 13. DATA INPUT & BILL SCANNER ==================== -->
+        <section id="page-data" class="page-view hidden">
+          <div class="page-head">
+            <div>
+              <h1>Data Input, Bill OCR & Records Management 📥</h1>
+              <p>Upload electricity/water bills, import CSV records, or log manual readings.</p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="downloadSampleCSVTemplate()">⬇ Download CSV
+              Template</button>
+          </div>
+
+          <div class="grid grid-2" style="margin-bottom:24px;">
+            <!-- OCR Scan Box -->
+            <div class="card">
+              <div class="card-head">
+                <h3 class="card-title">📄 Smart Bill Scanner (OCR + PDF)</h3>
+                <span class="pill pill-primary">Browser-Side OCR</span>
+              </div>
+
+              <div class="dropzone" id="billDropzone" onclick="document.getElementById('billFileInput').click()">
+                <div class="dropzone-icon">📤</div>
+                <div class="dropzone-title">Drop your electricity/water bill here</div>
+                <div class="dropzone-subtitle">Supports PDF, PNG, JPG (Client-side, privacy preserved)</div>
+                <input type="file" id="billFileInput" accept="image/*,.pdf,application/pdf" style="display:none;"
+                  onchange="handleBillFileSelected(this.files[0])">
+                <button type="button" class="btn btn-secondary btn-sm"
+                  onclick="event.stopPropagation(); document.getElementById('billFileInput').click()">Browse
+                  Files</button>
+              </div>
+
+              <div id="billFileStatusWrap" class="hidden" style="margin-top:16px;">
+                <div style="font-size:13px; font-weight:700; color:var(--text);" id="selectedBillName"></div>
+                <div id="billScanProgressText" style="font-size:12px; color:var(--muted); margin:4px 0 10px;">Ready to
+                  scan.</div>
+                <div style="display:flex; gap:10px;">
+                  <button class="btn btn-primary btn-sm" id="triggerScanBtn" onclick="executeBillOCRScan()">🔍 Scan &
+                    Extract Bill Values</button>
+                  <button class="btn btn-outline btn-sm" onclick="clearSelectedBill()">Cancel</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- CSV Upload Box -->
+            <div class="card">
+              <div class="card-head">
+                <h3 class="card-title">📊 Import Campus Sustainability CSV</h3>
+                <span class="pill">RFC-4180 Compliant</span>
+              </div>
+
+              <div class="dropzone" id="csvDropzone" onclick="document.getElementById('csvFileInput').click()">
+                <div class="dropzone-icon">📈</div>
+                <div class="dropzone-title">Upload campus CSV data</div>
+                <div class="dropzone-subtitle">Columns: date, block, energy_kwh, water_kl, waste_kg, etc.</div>
+                <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none;"
+                  onchange="handleCSVFileSelected(this.files[0])">
+                <button type="button" class="btn btn-secondary btn-sm"
+                  onclick="event.stopPropagation(); document.getElementById('csvFileInput').click()">Choose CSV</button>
+              </div>
+
+              <div id="csvStatusBox" style="font-size:12px; color:var(--muted); margin-top:14px;">
+                No CSV file currently uploaded.
+              </div>
+            </div>
+          </div>
+
+          <!-- MANUAL ENTRY FORM -->
+          <div class="card" style="margin-bottom:24px;">
+            <div class="card-head">
+              <h3 class="card-title">✍️ Manual Utility Entry Form</h3>
+              <span class="pill">Instant Dashboard Sync</span>
+            </div>
+
+            <form id="manualRecordForm" onsubmit="handleManualFormSubmit(event)">
+              <div class="grid grid-3">
+                <div class="form-group">
+                  <label>Reading Date *</label>
+                  <input type="date" class="form-control" id="entryDate" required>
+                </div>
+
+                <div class="form-group">
+                  <label>Campus Block *</label>
+                  <select class="form-control" id="entryBlock" required>
+                    <option value="Block A">Block A</option>
+                    <option value="Block B">Block B</option>
+                    <option value="Block C">Block C</option>
+                    <option value="Library">Library</option>
+                    <option value="Hostel">Hostel</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Electricity Consumed (kWh) *</label>
+                  <input type="number" step="any" min="0" class="form-control" id="entryEnergy" placeholder="e.g. 7850"
+                    required>
+                </div>
+
+                <div class="form-group">
+                  <label>Water Consumed (kL)</label>
+                  <input type="number" step="any" min="0" class="form-control" id="entryWater" placeholder="e.g. 310">
+                </div>
+
+                <div class="form-group">
+                  <label>Waste Generated (kg)</label>
+                  <input type="number" step="any" min="0" class="form-control" id="entryWaste" placeholder="e.g. 420">
+                </div>
+
+                <div class="form-group">
+                  <label>Billed Amount (₹)</label>
+                  <input type="number" step="any" min="0" class="form-control" id="entryBill" placeholder="e.g. 62800">
+                </div>
+              </div>
+
+              <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:14px;">
+                <button type="reset" class="btn btn-outline btn-sm">Clear Form</button>
+                <button type="submit" class="btn btn-primary btn-sm">💾 Save & Recalculate Dashboard</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- ALL VERIFIED RECORDS TABLE -->
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">📑 Active Campus Records Repository</h3>
+                <span style="font-size:12px; color:var(--muted);">All readings driving current dashboard metrics</span>
+              </div>
+              <div style="display:flex; gap:10px;">
+                <button class="btn btn-outline btn-sm" onclick="exportActiveDatasetToCSV()">Export All CSV</button>
+                <button class="btn btn-outline btn-sm" onclick="resetActiveData()" style="color:#dc2626;">Reset
+                  Records</button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Block</th>
+                    <th>Energy (kWh)</th>
+                    <th>Water (kL)</th>
+                    <th>Waste (kg)</th>
+                    <th>Bill Cost (₹)</th>
+                    <th>Source</th>
+                  </tr>
+                </thead>
+                <tbody id="recordsRepositoryTableBody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 14. SETTINGS & METHODOLOGY ==================== -->
+        <section id="page-settings" class="page-view hidden">
+          <div class="page-head">
+            <div>
+              <h1>Settings & Environmental Methodology ⚙️</h1>
+              <p>Configure emission factors, campus profile (FTE population), and Net Zero target.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveSettingsForm()">Save Settings</button>
+          </div>
+
+          <div class="grid grid-2">
+            <div class="card">
+              <h3 class="card-title" style="margin-bottom:16px;">Campus Baseline Parameters</h3>
+              <div class="form-group">
+                <label>Institution Name</label>
+                <input type="text" class="form-control" id="cfgCampusName"
+                  value="PSCMR College of Engineering & Technology">
+              </div>
+              <div class="form-group">
+                <label>Campus Student & Staff Population (FTE)</label>
+                <input type="number" class="form-control" id="cfgPopulation" value="3500">
+              </div>
+              <div class="form-group">
+                <label>Total Built Campus Area (sq. meters)</label>
+                <input type="number" class="form-control" id="cfgBuiltArea" value="42000">
+              </div>
+              <div class="form-group">
+                <label>Net Zero Target Year</label>
+                <input type="number" class="form-control" id="cfgNetZeroYear" value="2035">
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 class="card-title" style="margin-bottom:16px;">Configurable Emission Factors</h3>
+              <div class="form-group">
+                <label>India Grid Electricity Factor (kg CO₂e / kWh)</label>
+                <input type="number" step="0.001" class="form-control" id="cfgGridFactor" value="0.820">
+                <span style="font-size:11px; color:var(--muted);">CEA CO₂ Baseline Database Version 19.0</span>
+              </div>
+              <div class="form-group">
+                <label>Diesel Factor (kg CO₂e / Litre)</label>
+                <input type="number" step="0.001" class="form-control" id="cfgDieselFactor" value="2.680">
+              </div>
+              <div class="form-group">
+                <label>Average Commercial Electricity Tariff (₹ / kWh)</label>
+                <input type="number" step="0.1" class="form-control" id="cfgTariffRate" value="8.0">
+              </div>
+              <div class="form-group">
+                <label>Water Supply Tariff (₹ / kL)</label>
+                <input type="number" step="0.1" class="form-control" id="cfgWaterRate" value="50.0">
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /content-container -->
+
+      <!-- FOOTER -->
+      <footer class="footer-note">
+        <div>
+          <strong>Notice:</strong> Demo uses simulated data; emission factors based on Central Electricity Authority
+          (CEA) India grid factor v19.0.
+        </div>
+        <div>
+          GreenPulse v2.4 • Current Date: <span id="currentDateFooter"></span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- 1. "How is this score calculated?" Modal -->
+  <div class="modal-overlay" id="scoreExplainModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeScoreModal()">✕</button>
+      <div style="font-size:28px; margin-bottom:8px;">🎯</div>
+      <h2 style="font-size:20px; margin-bottom:8px;">How is the Sustainability Score Calculated?</h2>
+      <p style="font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:18px;">
+        The GreenPulse Sustainability Score (0–100) measures institutional resource efficiency against normalized
+        national campus baselines.
+      </p>
+
+      <div style="background:var(--soft); padding:14px; border-radius:10px; margin-bottom:18px;">
+        <h4 style="font-size:13px; margin-bottom:6px;">Multi-Pillar Weighted Formula</h4>
+        <code
+          style="font-size:12px; color:var(--green); font-weight:700;">Score = Σ (Normalized_Pillar_Score_i × Weight_i) / Σ (Weights)</code>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px; font-size:13px;">
+        <div style="border-bottom:1px solid var(--border); padding-bottom:10px;">
+          <strong>1. Energy Efficiency (Default: 30%)</strong>
+          <p style="color:var(--muted); font-size:12px; margin-top:2px;">Normalized per student against 120 kWh/year
+            benchmark.</p>
+        </div>
+        <div style="border-bottom:1px solid var(--border); padding-bottom:10px;">
+          <strong>2. Water Conservation (Default: 20%)</strong>
+          <p style="color:var(--muted); font-size:12px; margin-top:2px;">Normalized per capita against 45
+            Litres/person/day benchmark.</p>
+        </div>
+        <div style="border-bottom:1px solid var(--border); padding-bottom:10px;">
+          <strong>3. Waste Diversion (Default: 20%)</strong>
+          <p style="color:var(--muted); font-size:12px; margin-top:2px;">Calculates the percentage of waste diverted
+            from open landfill to composting.</p>
+        </div>
+        <div style="border-bottom:1px solid var(--border); padding-bottom:10px;">
+          <strong>4. Green Commuting (Default: 15%)</strong>
+          <p style="color:var(--muted); font-size:12px; margin-top:2px;">Evaluates non-motorized, public transit, and EV
+            shuttle modal share.</p>
+        </div>
+        <div>
+          <strong>5. Carbon Intensity (Default: 15%)</strong>
+          <p style="color:var(--muted); font-size:12px; margin-top:2px;">Measures net CO₂e emissions per gross built
+            area.</p>
+        </div>
+      </div>
+
+      <div style="margin-top:22px; text-align:right;">
+        <button class="btn btn-primary btn-sm" onclick="closeScoreModal()">Got it, thank you</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. OCR Verification & Correction Modal -->
+  <div class="modal-overlay" id="ocrVerifyModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeOcrVerifyModal()">✕</button>
+      <div style="font-size:28px; margin-bottom:8px;">🔍</div>
+      <h2 style="font-size:20px; margin-bottom:6px;">Verify OCR Extracted Data</h2>
+      <p style="font-size:12px; color:var(--muted); margin-bottom:16px;">
+        OCR can misread numbers from utility scans. Please review and adjust the extracted figures before saving.
+      </p>
+
+      <form id="ocrVerifyForm" onsubmit="handleOcrConfirmSubmit(event)">
+        <div class="form-group">
+          <label>Reading / Billing Date</label>
+          <input type="date" class="form-control" id="ocrInputDate" required>
+        </div>
+        <div class="form-group">
+          <label>Campus Block / Meter</label>
+          <select class="form-control" id="ocrInputBlock">
+            <option value="Block A">Block A</option>
+            <option value="Block B">Block B</option>
+            <option value="Block C">Block C</option>
+            <option value="Library">Library</option>
+            <option value="Hostel">Hostel</option>
+            <option value="Admin">Admin</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Detected Electricity (kWh)</label>
+          <input type="number" step="any" class="form-control" id="ocrInputEnergy" required>
+        </div>
+        <div class="form-group">
+          <label>Detected Billed Amount (₹)</label>
+          <input type="number" step="any" class="form-control" id="ocrInputCost">
+        </div>
+
+        <div
+          style="background:var(--soft); padding:12px; border-radius:8px; font-size:11px; color:var(--muted); max-height:100px; overflow-y:auto; margin-bottom:16px;"
+          id="ocrRawTextPreview">
+          Raw OCR text stream...
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="closeOcrVerifyModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Confirm & Commit to Dashboard</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- MAIN SCRIPT -->
+  <script src="script.js"></script>
+</body>
+
+</html>

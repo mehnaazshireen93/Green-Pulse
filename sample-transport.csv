@@ -1,0 +1,13 @@
+date,transport_mode,trips_count,total_km,passengers_count,green_commute_flag,co2e_kg
+2026-10-08,Electric Shuttle Bus,48,720,1440,Yes,0.0
+2026-10-08,Bicycle / Walk,850,2550,850,Yes,0.0
+2026-10-08,Public Bus & Metro,620,6820,620,Yes,341.0
+2026-10-08,Carpooling (2+ riders),180,2160,420,Yes,183.6
+2026-10-08,Solo Two-Wheeler (Petrol),410,3280,410,No,124.6
+2026-10-08,Solo Car (Petrol),140,1680,140,No,285.6
+2026-10-07,Electric Shuttle Bus,46,690,1380,Yes,0.0
+2026-10-07,Bicycle / Walk,820,2460,820,Yes,0.0
+2026-10-07,Public Bus & Metro,600,6600,600,Yes,330.0
+2026-10-07,Carpooling (2+ riders),175,2100,410,Yes,178.5
+2026-10-07,Solo Two-Wheeler (Petrol),430,3440,430,No,130.7
+2026-10-07,Solo Car (Petrol),150,1800,150,No,306.0

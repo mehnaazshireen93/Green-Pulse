@@ -1,0 +1,13 @@
+timestamp,block,sensor_type,reading_value,unit,anomaly_flag
+2026-10-09 00:00:00,Block C,Water Flow Rate,0.85,m3/hr,Normal
+2026-10-09 02:00:00,Block C,Water Flow Rate,3.45,m3/hr,High_Flow_Anomaly
+2026-10-09 04:00:00,Block C,Water Flow Rate,3.40,m3/hr,High_Flow_Anomaly
+2026-10-09 08:00:00,Block C,Water Flow Rate,1.90,m3/hr,Normal
+2026-10-09 10:00:00,Library,HVAC Power Demand,48.2,kW,Normal
+2026-10-09 14:00:00,Library,HVAC Power Demand,52.5,kW,Normal
+2026-10-09 23:00:00,Library,HVAC Power Demand,34.8,kW,After_Hours_Spike
+2026-10-09 11:00:00,Block A,Solar Inverter Generation,78.5,kW,Normal
+2026-10-09 13:00:00,Block A,Solar Inverter Generation,94.2,kW,Normal
+2026-10-09 15:00:00,Block A,Indoor Ambient Temp,23.8,deg_C,Normal
+2026-10-09 15:00:00,Block B,Indoor Ambient Temp,24.1,deg_C,Normal
+2026-10-09 15:00:00,Hostel,Room Occupancy Index,88.0,percent,Normal
